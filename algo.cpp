@@ -4,20 +4,23 @@
 #include <geometry_msgs/Quaternion.h>
 #define RC rc_ovrd.channels
 mavros_msgs::OverrideRCIn rc_ovrd;
-geometry_msgs::Quaternion distances;
+geometry_msgs::Quaternion distance1;
+geometry_msgs::Quaternion distance2;
+geometry_msgs::Quaternion distance3;
+geometry_msgs::Quaternion distance4;
 mavros_msgs::RCIn over_switch;
 
 int kill ;
-int dist[4] ;
-int count = 0;
-int avg_dist ;
-int now=0, past=0;
+int dist1[4],dist2[4],dist3[4],dist4[4] ;
+int count1 = 0,count2 = 0,count3 = 0,count4 = 0;
+int avg_dist[4] ;
+int now1=0, now2=0, now3=0, now4=0;
 ros::Time begin = ros::Time::now();
 ros::Time end = ros::Time::now();
 ros::Duration three_seconds(3.0);
 
 RC[0] = 1500;
-RC[1] = 1200;
+RC[1] = 1500;
 RC[2] = 1500;
 RC[3] = 1500;
 RC[4] = 1100;
@@ -36,14 +39,47 @@ int avg(int array[4]){
     return sum;
 }
 
-void dist_cb(const geometry_msgs::Quaternion::ConstPtr& msg){
-    distances = *msg;
-    dist[count] = int(distances.x);
-    count ++ ;
-    if(count == 4){
-    avg_dist = avg(dist);
-    count = 0;
-    now ++;
+void dist1_cb(const geometry_msgs::Quaternion::ConstPtr& msgd1){
+    distance1 = *msgd1;
+    dist1[count1] = int(distance1.x);
+    count1 ++ ;
+    if(count1 == 4){
+    avg_dist[0] = avg(dist2);
+    count1 = 0;
+    now1 ++;
+    }
+}
+
+void dist2_cb(const geometry_msgs::Quaternion::ConstPtr& msgd2){
+    distance2 = *msgd2;
+    dist2[count2] = int(distance2.x);
+    count2 ++ ;
+    if(count2 == 4){
+    avg_dist[1] = avg(dist2);
+    count2 = 0;
+    now2 ++;
+    }
+}
+
+void dist3_cb(const geometry_msgs::Quaternion::ConstPtr& msgd3){
+    distance3 = *msgd3;
+    dist3[count3] = int(distance3.x);
+    count3 ++ ;
+    if(count3 == 4){
+    avg_dist[2] = avg(dist3);
+    count3 = 0;
+    now3 ++;
+    }
+}
+
+void dist4_cb(const geometry_msgs::Quaternion::ConstPtr& msgd4){
+    distance4 = *msgd4;
+    dist4[count4] = int(distance4.x);
+    count4 ++ ;
+    if(count4 == 4){
+    avg_dist[3] = avg(dist4);
+    count4 = 0;
+    now4++;
     }
 }
 
@@ -51,7 +87,10 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "offb_node");
     ros::NodeHandle nh;
-    ros::Subscriber dist_sub = nh.subscribe<geometry_msgs::Quaternion>("/Distances", 10, dist_cb);
+    ros::Subscriber dist1_sub = nh.subscribe<geometry_msgs::Quaternion>("/Distance1", 10, dist1_cb);
+    ros::Subscriber dist2_sub = nh.subscribe<geometry_msgs::Quaternion>("/Distance2", 10, dist2_cb);
+    ros::Subscriber dist3_sub = nh.subscribe<geometry_msgs::Quaternion>("/Distance3", 10, dist3_cb);
+    ros::Subscriber dist4_sub = nh.subscribe<geometry_msgs::Quaternion>("/Distance4", 10, dist4_cb);
     ros::Subscriber rc_sub = nh.subscribe<mavros_msgs::RCIn>("mavros/rc/in", 10, rc_cb);
     ros::Publisher radio_pub = nh.advertise<mavros_msgs::OverrideRCIn>("mavros/rc/override", 10);
 
@@ -62,7 +101,7 @@ int main(int argc, char **argv)
 
         if(now>past){
             if(kill <= 1100){
-                if(avg_dist < 70){
+                if(avg_dist[0] < 70 || avg_dist[1] < 70 || avg_dist[2] < 70 || avg_dist[3] < 70){
                     begin = ros::Time::now();
                     end = ros::Time::now();
                     while((end-begin)<three_seconds && kill <= 1100){

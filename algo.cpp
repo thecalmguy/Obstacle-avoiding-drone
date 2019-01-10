@@ -10,64 +10,42 @@ geometry_msgs::Quaternion distance4;
 mavros_msgs::RCIn over_switch;
 
 int kill ;
-int dist1[4],dist2[4],dist3[4],dist4[4] ;
-int count1 = 0,count2 = 0,count3 = 0,count4 = 0;
+int dist[4][4];
 int avg_dist[4] ;
-int now1=0, now2=0, now3=0, now4=0;
 
 void rc_cb(const mavros_msgs::RCIn::ConstPtr& msg2){
     over_switch = *msg2;
     kill = over_switch.channels[5];
 }
 
-int avg(int array[4]){
-    int sum = array[0] + array[1] + array[2] + array[3];
+int push_avg(int array_number, int new_element){
+    dist[array_number][0] = dist[array_number][1];
+    dist[array_number][1] = dist[array_number][2];
+    dist[array_number][2] = dist[array_number][3];
+    dist[array_number][3] = new_element;
+    int sum = dist[array_number][3] + dist[array_number][2] + dist[array_number][1] + dist[array_number][0];
     sum = int(sum/4);
     return sum;
 }
 
 void dist1_cb(const geometry_msgs::Quaternion::ConstPtr& msgd1){
     distance1 = *msgd1;
-    dist1[count1] = int(distance1.x);
-    count1++ ;
-    if(count1 == 4){
-    avg_dist[0] = avg(dist1);
-    count1 = 0;
-  
-    }
+    avg_dist[0] = push_avg(0,int(distance1.x));
 }
 
 void dist2_cb(const geometry_msgs::Quaternion::ConstPtr& msgd2){
     distance2 = *msgd2;
-    dist2[count2] = int(distance2.x);
-    count2++ ;
-    if(count2 == 4){
-    avg_dist[1] = avg(dist2);
-    count2 = 0;
-  
-    }
+    avg_dist[1] = push_avg(1,int(distance2.x));
 }
 
 void dist3_cb(const geometry_msgs::Quaternion::ConstPtr& msgd3){
     distance3 = *msgd3;
-    dist3[count3] = int(distance3.x);
-    count3++ ;
-    if(count3 == 4){
-    avg_dist[2] = avg(dist3);
-    count3 = 0;
-  
-    }
+    avg_dist[2] = push_avg(2,int(distance3.x));
 }
 
 void dist4_cb(const geometry_msgs::Quaternion::ConstPtr& msgd4){
     distance4 = *msgd4;
-    dist4[count4] = int(distance4.x);
-    count4++ ;
-    if(count4 == 4){
-    avg_dist[3] = avg(dist4);
-    count4 = 0;
-   
-    }
+    avg_dist[3] = push_avg(3,int(distance4.x));
 }
 
 int main(int argc, char **argv)
@@ -83,9 +61,6 @@ int main(int argc, char **argv)
 
     ros::Rate rate(50.0);
     mavros_msgs::OverrideRCIn psi;
-	ros::Time begin = ros::Time::now();
-	ros::Time end = ros::Time::now();
-	ros::Duration three_seconds(3.0);
 
     psi.channels[0] = 1500;
     psi.channels[1] = 1500;

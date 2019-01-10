@@ -33,7 +33,7 @@ void dist1_cb(const geometry_msgs::Quaternion::ConstPtr& msgd1){
     if(count1 == 4){
     avg_dist[0] = avg(dist1);
     count1 = 0;
-    now1++;
+  
     }
 }
 
@@ -44,7 +44,7 @@ void dist2_cb(const geometry_msgs::Quaternion::ConstPtr& msgd2){
     if(count2 == 4){
     avg_dist[1] = avg(dist2);
     count2 = 0;
-    now2++;
+  
     }
 }
 
@@ -55,7 +55,7 @@ void dist3_cb(const geometry_msgs::Quaternion::ConstPtr& msgd3){
     if(count3 == 4){
     avg_dist[2] = avg(dist3);
     count3 = 0;
-    now3++;
+  
     }
 }
 
@@ -66,7 +66,7 @@ void dist4_cb(const geometry_msgs::Quaternion::ConstPtr& msgd4){
     if(count4 == 4){
     avg_dist[3] = avg(dist4);
     count4 = 0;
-    now4++;
+   
     }
 }
 
@@ -99,45 +99,33 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
 
-        if(now1>0||now2>0||now3>0||now4>0){
-            if(kill <= 1100){
-                if(avg_dist[0] < 70 || avg_dist[1] < 70 || avg_dist[2] < 70 || avg_dist[3] < 70){
-                    begin = ros::Time::now();
-                    end = ros::Time::now();
-                    while((end-begin)<three_seconds && kill <= 1100){
-                        end = ros::Time::now();
-                        if(avg_dist[0]<70){
+                if(kill <= 1100){
+       		         if(avg_dist[0] <100  || avg_dist[1]<100 ||  avg_dist[2] < 100 || avg_dist[3] < 100){
+                    
+                    
+                        if(avg_dist[0]<100){
                         	psi.channels[1] = 1800;
-                        }else{
+                        }else if(avg_dist[2]<100){
+				psi.channels[1] = 1200;
+			}else{
 				psi.channels[1] = 1500;
 			}
-                        if(avg_dist[1]<70){
-                        	psi.channels[0] = 1200;
-                        }else{
-				psi.channels[0] = 1500;
-			}
-                        if(avg_dist[2]<70){
-                        	psi.channels[1] = 1200;
-                        }else{
-				psi.channels[1] = 1500;
-			}
-                        if(avg_dist[3]<70){
-                        	psi.channels[0] = 1800;
-                        }else{
+			if(avg_dist[1]<100){
+				psi.channels[0] = 1200;
+			}else if(avg_dist[3]<100){
+				psi.channels[0] = 1800;
+			}else{
 				psi.channels[0] = 1500;
 			}
                         radio_pub.publish(psi);
-                    }
+                    
                 }
             }
-            now1 = 0;
-	    now2 = 0;
-	    now3 = 0;
-	    now4 = 0;
-        }
+        
         ros::spinOnce();
         rate.sleep();
     }
 
     return 0;
 }
+

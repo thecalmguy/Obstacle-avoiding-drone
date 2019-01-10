@@ -3,7 +3,7 @@
 import rospy
 import RPi.GPIO as gp
 import time
-from geometry_msgs.msg import Quaternion
+from std_msgs.msg import Float32
 
 gp.setmode(gp.BCM)
 
@@ -12,7 +12,7 @@ echopin = 12
 gp.setup(trigpin, gp.OUT)
 gp.setup(echopin, gp.IN)
 
-dist = Quaternion()
+dist = Float32()
 
 def give_distance():
     gp.output(trigpin, True)
@@ -34,11 +34,11 @@ def give_distance():
     duration = end - start
     distance = duration/0.000058
     #print('Distance_1: {} cm '.format(distance))
-    dist.x = distance
+    dist.data = distance
     
 
 def proximity():
-    pub = rospy.Publisher('Distance1', Quaternion, queue_size=10)
+    pub = rospy.Publisher('Distance1', Float32, queue_size=10)
     rospy.init_node('proximity1', anonymous=True)
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():

@@ -61,6 +61,7 @@ int main(int argc, char **argv)
 
     ros::Rate rate(50.0);
     mavros_msgs::OverrideRCIn psi;
+    int minimum_dist = 100;
 
     psi.channels[0] = 1500;
     psi.channels[1] = 1500;
@@ -70,37 +71,45 @@ int main(int argc, char **argv)
     psi.channels[5] = 1950;
     psi.channels[6] = 1000;
     psi.channels[7] = 1100;
-    
+
     while (ros::ok())
     {
+        if(kill <= 1100)
+        {
+	        if(avg_dist[0] <1minimum_dist  || avg_dist[1]<minimum_dist ||  avg_dist[2] < minimum_dist || avg_dist[3] < minimum_dist){
 
-                if(kill <= 1100){
-       		         if(avg_dist[0] <100  || avg_dist[1]<100 ||  avg_dist[2] < 100 || avg_dist[3] < 100){
-                    
-                    
-                        if(avg_dist[0]<100){
-                        	psi.channels[1] = 1800;
-                        }else if(avg_dist[2]<100){
-				psi.channels[1] = 1200;
-			}else{
-				psi.channels[1] = 1500;
-			}
-			if(avg_dist[1]<100){
-				psi.channels[0] = 1200;
-			}else if(avg_dist[3]<100){
-				psi.channels[0] = 1800;
-			}else{
-				psi.channels[0] = 1500;
-			}
-                        radio_pub.publish(psi);
-                    
+				//Forward Direction : avg_dist[0]
+				//Backward Direction : avg_dist[2]
+				//Left Direction : avg_dist[3]
+				//Right Direction : avg_dist[1]
+
+				if(avg_dist[0]<minimum_dist){
+					//move backwards
+					psi.channels[1] = 1800;
+				}else if(avg_dist[2]<minimum_dist){
+					//move forwards
+					psi.channels[1] = 1200;
+				}else{
+					psi.channels[1] = 1500;
+				}
+
+				if(avg_dist[1]<minimum_dist){
+					//move leftwards
+					psi.channels[0] = 1200;
+				}else if(avg_dist[3]<minimum_dist){
+					//move rightwards
+					psi.channels[0] = 1800;
+				}else{
+					psi.channels[0] = 1500;
                 }
+                radio_pub.publish(psi);
+
             }
-        
+        }
+
         ros::spinOnce();
         rate.sleep();
     }
 
     return 0;
 }
-
